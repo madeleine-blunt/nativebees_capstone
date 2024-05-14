@@ -1,11 +1,8 @@
 pandas
 numpy
 streamlit
-matplotlib.pyplot
+matplotlib
 seaborn
-plotly.figure_factory
-plotly.graph_objs
-sklearn.linear_model
-sklearn.model_selection
-sklearn.metrics
+plotly
+sklearn
 math
