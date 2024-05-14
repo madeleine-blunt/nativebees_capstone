@@ -80,7 +80,7 @@ parks = ['ACAD', 'ARCH', 'BADL', 'BIBE', 'BISC', 'BLCA', 'BRCA', 'CANY', 'CARE',
 bee_family = ['Melittidae', 'Apidae', 'Megachilidae', 'Andrenidae',
                          'Halictidae', 'Stenotritidae','Colletidae']
 
-Flowers = pd.read_pickle("flowers.pkl")
+Flowers = pd.read_pickle("Flowers.pkl")
 flower_family = Flowers['Family'].values.tolist()
 flower_family = [x.rstrip() for x in flower_family]
 
