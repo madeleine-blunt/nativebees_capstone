@@ -2,13 +2,9 @@
 
 import pandas as pd
 import numpy as np
-from sklearn import linear_model
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import streamlit as st
-from datetime import date
-from datetime import timedelta
-
 
 ### Park Dictionary
 park_dict = {
