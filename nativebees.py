@@ -10,6 +10,7 @@ import seaborn as sns
 import plotly.figure_factory as ff
 import plotly.graph_objs  as go
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import PoissonRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 from math import sqrt
@@ -948,184 +949,253 @@ with tab3:
    col1, col2= st.columns(2)
 
    with col1:
-         trainmodel_park = st.toggle("Parks - Train model")
+      trainmodel_park = st.toggle("Parks - Linear model")
          
-         if trainmodel_park:
-            st.header("Modeling All Species by Park")
-            park_sum = park_sum[park_sum['Bee'] != 0]
-            y = park_sum.Flower.values
-            X = park_sum.Bee.values
+      if trainmodel_park:
+         st.header("Modeling All Species by Park")
+         park_sum = park_sum[park_sum['Bee'] != 0]
+         park_sum = park_sum[park_sum['Flower'] != 0]
+         y = park_sum.Flower.values
+         X = park_sum.Bee.values
 
-            y = y.reshape(len(y), 1)
-            X = X.reshape(len(X), 1)
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-            lrgr = LinearRegression()
-            lrgr.fit(X_train,y_train)
-            pred = lrgr.predict(X_test)
+         lrgr = LinearRegression()
+         lrgr.fit(X_train,y_train)
+         pred = lrgr.predict(X_test)
 
-            mse = mean_squared_error(y_test,pred)
-            rmse = sqrt(mse)
+         mse = mean_squared_error(y_test,pred)
+         rmse = sqrt(mse)
 
-            st.markdown(f"""
-            Linear Regression model trained :
-               - MSE:{mse}
-               - RMSE:{rmse}
-            """)
-            st.success('Model trained successfully')
+         st.markdown(f"""
+         Linear Regression model trained :
+            - MSE:{mse}
+            - RMSE:{rmse}
+         """)
+         st.success('Model trained successfully')
 
-            fig=plt.figure()
-            plt.scatter(X, y,color='g')
-            plt.plot(X, lrgr.predict(X),color='k')
-            plt.show()
-            st.plotly_chart(fig)
-      
-         trainmodel_state = st.toggle("State - Train model")
-
-         if trainmodel_state:
-            st.header("Modeling All Species by State")
-            state_sum = state_sum[state_sum['Bee'] != 0]
-            y = state_sum.Flower.values
-            X = state_sum.Bee.values
-
-            y = y.reshape(len(y), 1)
-            X = X.reshape(len(X), 1)
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-
-            lrgr = LinearRegression()
-            lrgr.fit(X_train,y_train)
-            pred = lrgr.predict(X_test)
-
-            mse = mean_squared_error(y_test,pred)
-            rmse = sqrt(mse)
-
-            st.markdown(f"""
-            Linear Regression model trained :
-               - MSE:{mse}
-               - RMSE:{rmse}
-            """)
-            st.success('Model trained successfully')
-
-            fig=plt.figure()
-            plt.scatter(X, y,color='g')
-            plt.plot(X, lrgr.predict(X),color='k')
-            plt.show()
-            st.plotly_chart(fig)
+         fig=plt.figure()
+         plt.scatter(X, y,color='g')
+         plt.plot(X, lrgr.predict(X),color='k')
+         plt.show()
+         st.plotly_chart(fig)
    
-         dokfold_park = st.toggle("Park - DO KFold")
+      trainmodel_state = st.toggle("State - Linear model")
 
-         if dokfold_park:
-            st.subheader("KFOLD Random sampling Evalution")
-            st.empty()
-            my_bar = st.progress(0)
+      if trainmodel_state:
+         st.header("Modeling All Species by State")
+         state_sum = state_sum[state_sum['Bee'] != 0]
+         state_sum = state_sum[state_sum['Flower'] != 0]
+         y = state_sum.Flower.values
+         X = state_sum.Bee.values
 
-            from sklearn.model_selection import KFold
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-            park_sum = park_sum[park_sum['Bee'] != 0]
-            y = park_sum.Flower.values
-            X = park_sum.Bee.values
+         lrgr = LinearRegression()
+         lrgr.fit(X_train,y_train)
+         pred = lrgr.predict(X_test)
 
-            y = y.reshape(len(y), 1)
-            X = X.reshape(len(X), 1)
-            #st.progress()
-            kf=KFold(n_splits=10)
-            #X=X.reshape(-1,1)
-            mse_list=[]
-            rmse_list=[]
-            r2_list=[]
-            idx=1
-            fig=plt.figure()
-            i=0
-            for train_index, test_index in kf.split(X):
-            #	st.progress()
-               my_bar.progress(idx*10)
-               X_train, X_test = X[train_index], X[test_index]
-               y_train, y_test = y[train_index], y[test_index]
-               lrgr = LinearRegression()
-               lrgr.fit(X_train,y_train)
-               pred = lrgr.predict(X_test)
-               
-               mse = mean_squared_error(y_test,pred)
-               rmse = sqrt(mse)
-               r2=r2_score(y_test,pred)
-               mse_list.append(mse)
-               rmse_list.append(rmse)
-               r2_list.append(r2)
-               plt.plot(pred,label=f"dataset-{idx}")
-               idx+=1
-            plt.legend()
-            plt.xlabel("Data points")
-            plt.ylabel("PRedictions")
-            plt.show()
-            st.plotly_chart(fig)
+         mse = mean_squared_error(y_test,pred)
+         rmse = sqrt(mse)
 
-            res=pd.DataFrame(columns=["MSE","RMSE","r2_SCORE"])
-            res["MSE"]=mse_list
-            res["RMSE"]=rmse_list
-            res["r2_SCORE"]=r2_list
+         st.markdown(f"""
+         Linear Regression model trained :
+            - MSE:{mse}
+            - RMSE:{rmse}
+         """)
+         st.success('Model trained successfully')
 
-            st.write(res)
+         fig=plt.figure()
+         plt.scatter(X, y,color='g')
+         plt.plot(X, lrgr.predict(X),color='k')
+         plt.show()
+         st.plotly_chart(fig)
 
-         dokfold_state = st.toggle("State - DO KFold")
+      poisnmodel_park = st.toggle("Parks - Poisson model")
 
-         if dokfold_state:
-            st.subheader("KFOLD Random sampling Evalution")
-            st.empty()
-            my_bar = st.progress(0)
+      if poisnmodel_park:
+         park_sum = park_sum[park_sum['Bee'] != 0]
+         park_sum = park_sum[park_sum['Flower'] != 0]
+         y = park_sum.Flower.values
+         X = park_sum.Bee.values
 
-            from sklearn.model_selection import KFold
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-            state_sum = state_sum[state_sum['Bee'] != 0]
-            y = state_sum.Flower.values
-            X = state_sum.Bee.values
+         prgr = PoissonRegressor()
+         prgr.fit(X_train,y_train)
+         pred = prgr.predict(X_test)
 
-            y = y.reshape(len(y), 1)
-            X = X.reshape(len(X), 1)
-            #st.progress()
-            kf=KFold(n_splits=10)
-            #X=X.reshape(-1,1)
-            mse_list=[]
-            rmse_list=[]
-            r2_list=[]
-            idx=1
-            fig=plt.figure()
-            i=0
-            for train_index, test_index in kf.split(X):
-            #	st.progress()
-               my_bar.progress(idx*10)
-               X_train, X_test = X[train_index], X[test_index]
-               y_train, y_test = y[train_index], y[test_index]
-               lrgr = LinearRegression()
-               lrgr.fit(X_train,y_train)
-               pred = lrgr.predict(X_test)
-               
-               mse = mean_squared_error(y_test,pred)
-               rmse = sqrt(mse)
-               r2=r2_score(y_test,pred)
-               mse_list.append(mse)
-               rmse_list.append(rmse)
-               r2_list.append(r2)
-               plt.plot(pred,label=f"dataset-{idx}")
-               idx+=1
-            plt.legend()
-            plt.xlabel("Data points")
-            plt.ylabel("PRedictions")
-            plt.show()
-            st.plotly_chart(fig)
+         mse = mean_squared_error(y_test,pred)
+         rmse = sqrt(mse)
 
-            res=pd.DataFrame(columns=["MSE","RMSE","r2_SCORE"])
-            res["MSE"]=mse_list
-            res["RMSE"]=rmse_list
-            res["r2_SCORE"]=r2_list
+         st.markdown(f"""
+         Poisson Regression model trained :
+            - MSE:{mse}
+            - RMSE:{rmse}
+         """)
+         st.success('Model trained successfully')
 
-            st.write(res)
+         fig=plt.figure()
+         plt.scatter(X, y,color='g')
+         plt.plot(X, prgr.predict(X),color='k')
+         plt.show()
+         st.plotly_chart(fig)
+
+      poisnmodel_state = st.toggle("State - Poisson model")
+
+      if poisnmodel_state:
+         state_sum = state_sum[state_sum['Bee'] != 0]
+         state_sum = state_sum[state_sum['Flower'] != 0]
+         y = state_sum.Flower.values
+         X = state_sum.Bee.values
+
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+         prgr = PoissonRegressor()
+         prgr.fit(X_train,y_train)
+         pred = prgr.predict(X_test)
+
+         mse = mean_squared_error(y_test,pred)
+         rmse = sqrt(mse)
+
+         st.markdown(f"""
+         Poisson Regression model trained :
+            - MSE:{mse}
+            - RMSE:{rmse}
+         """)
+         st.success('Model trained successfully')
+
+         fig=plt.figure()
+         plt.scatter(X, y,color='g')
+         plt.plot(X, prgr.predict(X),color='k')
+         plt.show()
+         st.plotly_chart(fig)
+
+      dokfold_park = st.toggle("Park - DO KFold")
+
+      if dokfold_park:
+         st.subheader("KFOLD Random sampling Evalution")
+         st.empty()
+         my_bar = st.progress(0)
+
+         from sklearn.model_selection import KFold
+
+         park_sum = park_sum[park_sum['Bee'] != 0]
+         park_sum = park_sum[park_sum['Flower'] != 0]
+         y = park_sum.Flower.values
+         X = park_sum.Bee.values
+
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         #st.progress()
+         kf=KFold(n_splits=10)
+         #X=X.reshape(-1,1)
+         mse_list=[]
+         rmse_list=[]
+         r2_list=[]
+         idx=1
+         fig=plt.figure()
+         i=0
+         for train_index, test_index in kf.split(X):
+         #	st.progress()
+            my_bar.progress(idx*10)
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            lrgr = LinearRegression()
+            lrgr.fit(X_train,y_train)
+            pred = lrgr.predict(X_test)
+            
+            mse = mean_squared_error(y_test,pred)
+            rmse = sqrt(mse)
+            r2=r2_score(y_test,pred)
+            mse_list.append(mse)
+            rmse_list.append(rmse)
+            r2_list.append(r2)
+            plt.plot(pred,label=f"dataset-{idx}")
+            idx+=1
+         plt.legend()
+         plt.xlabel("Data points")
+         plt.ylabel("PRedictions")
+         plt.show()
+         st.plotly_chart(fig)
+
+         res=pd.DataFrame(columns=["MSE","RMSE","r2_SCORE"])
+         res["MSE"]=mse_list
+         res["RMSE"]=rmse_list
+         res["r2_SCORE"]=r2_list
+
+         st.write(res)
+
+      dokfold_state = st.toggle("State - DO KFold")
+
+      if dokfold_state:
+         st.subheader("KFOLD Random sampling Evalution")
+         st.empty()
+         my_bar = st.progress(0)
+
+         from sklearn.model_selection import KFold
+
+         state_sum = state_sum[state_sum['Bee'] != 0]
+         state_sum = state_sum[state_sum['Flower'] != 0]
+         y = state_sum.Flower.values
+         X = state_sum.Bee.values
+
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         #st.progress()
+         kf=KFold(n_splits=10)
+         #X=X.reshape(-1,1)
+         mse_list=[]
+         rmse_list=[]
+         r2_list=[]
+         idx=1
+         fig=plt.figure()
+         i=0
+         for train_index, test_index in kf.split(X):
+         #	st.progress()
+            my_bar.progress(idx*10)
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            lrgr = LinearRegression()
+            lrgr.fit(X_train,y_train)
+            pred = lrgr.predict(X_test)
+            
+            mse = mean_squared_error(y_test,pred)
+            rmse = sqrt(mse)
+            r2=r2_score(y_test,pred)
+            mse_list.append(mse)
+            rmse_list.append(rmse)
+            r2_list.append(r2)
+            plt.plot(pred,label=f"dataset-{idx}")
+            idx+=1
+         plt.legend()
+         plt.xlabel("Data points")
+         plt.ylabel("PRedictions")
+         plt.show()
+         st.plotly_chart(fig)
+
+         res=pd.DataFrame(columns=["MSE","RMSE","r2_SCORE"])
+         res["MSE"]=mse_list
+         res["RMSE"]=rmse_list
+         res["r2_SCORE"]=r2_list
+
+         st.write(res)
 
    with col2:
-      trainmodel_park_native = st.toggle("Parks (Native Species) - Train model")
+      trainmodel_park_native = st.toggle("Parks (Native Species) - Linear model")
       
       if trainmodel_park_native:
          st.header("Modeling Native Species by Park")
          park_sum = park_sum[park_sum['Native_Bee'] != 0]
+         park_sum = park_sum[park_sum['Native_Flower'] != 0]
          y = park_sum.Native_Flower.values
          X = park_sum.Native_Bee.values
          y = y.reshape(len(y), 1)
@@ -1152,11 +1222,12 @@ with tab3:
          plt.show()
          st.plotly_chart(fig)
          
-      trainmodel_state_native = st.toggle("State (Native Species) - Train model")
+      trainmodel_state_native = st.toggle("State (Native Species) - Linear model")
 
       if trainmodel_state_native:
          st.header("Modeling Native Species by State")
          state_sum = state_sum[state_sum['Native_Bee'] != 0]
+         state_sum = state_sum[state_sum['Native_Flower'] != 0]
          y = state_sum.Native_Flower.values
          X = state_sum.Native_Bee.values
 
@@ -1184,6 +1255,70 @@ with tab3:
          plt.show()
          st.plotly_chart(fig)
 
+      poisnmodel_park_native = st.toggle("Parks (Native Species) - Poisson model")
+
+      if poisnmodel_park_native:
+         park_sum = park_sum[park_sum['Native_Bee'] != 0]
+         park_sum = park_sum[park_sum['Native_Flower'] != 0]
+         y = park_sum.Native_Flower.values
+         X = park_sum.Native_Bee.values
+
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+         prgr = PoissonRegressor()
+         prgr.fit(X_train,y_train)
+         pred = prgr.predict(X_test)
+
+         mse = mean_squared_error(y_test,pred)
+         rmse = sqrt(mse)
+
+         st.markdown(f"""
+         Poisson Regression model trained :
+            - MSE:{mse}
+            - RMSE:{rmse}
+         """)
+         st.success('Model trained successfully')
+
+         fig=plt.figure()
+         plt.scatter(X, y,color='g')
+         plt.plot(X, prgr.predict(X),color='k')
+         plt.show()
+         st.plotly_chart(fig)
+
+      poisnmodel_state_native = st.toggle("State (Native Species) - Poisson model")
+
+      if poisnmodel_state_native:
+         state_sum = state_sum[state_sum['Native_Bee'] != 0]
+         state_sum = state_sum[state_sum['Native_Flower'] != 0]
+         y = state_sum.Native_Flower.values
+         X = state_sum.Native_Bee.values
+
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+         prgr = PoissonRegressor()
+         prgr.fit(X_train,y_train)
+         pred = prgr.predict(X_test)
+
+         mse = mean_squared_error(y_test,pred)
+         rmse = sqrt(mse)
+
+         st.markdown(f"""
+         Poisson Regression model trained :
+            - MSE:{mse}
+            - RMSE:{rmse}
+         """)
+         st.success('Model trained successfully')
+
+         fig=plt.figure()
+         plt.scatter(X, y,color='g')
+         plt.plot(X, prgr.predict(X),color='k')
+         plt.show()
+         st.plotly_chart(fig)
+
       dokfold_park_native = st.toggle("Park (Native Species) - DO KFold")
       
       if dokfold_park_native:
@@ -1194,6 +1329,7 @@ with tab3:
          from sklearn.model_selection import KFold
 
          park_sum = park_sum[park_sum['Native_Bee'] != 0]
+         park_sum = park_sum[park_sum['Native_Flower'] != 0]
          y = park_sum.Native_Flower.values
          X = park_sum.Native_Bee.values
 
@@ -1248,6 +1384,7 @@ with tab3:
          from sklearn.model_selection import KFold
 
          state_sum = state_sum[state_sum['Native_Bee'] != 0]
+         state_sum = state_sum[state_sum['Native_Flower'] != 0]
          y = state_sum.Native_Flower.values
          X = state_sum.Native_Bee.values
 
@@ -1291,3 +1428,4 @@ with tab3:
          res["r2_SCORE"]=r2_list
 
          st.write(res)
+
