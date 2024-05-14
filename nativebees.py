@@ -1,8 +1,18 @@
+## Name: Madeleine Blunt
+
 ## Import Python Libraries
 
 import pandas as pd
 import numpy as np
 import streamlit as st
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.figure_factory as ff
+import plotly.graph_objs  as go
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+from math import sqrt
 
 ### Park Dictionary
 park_dict = {
@@ -91,7 +101,6 @@ Native_bees = NPS_bees.loc[NPS_bees['Nativeness'] == "Native"]
 NPS_flowers = pd.read_pickle("Flower Pickles/NPS_flowers.pkl") 
 Native_flowers = NPS_flowers.loc[NPS_flowers['Nativeness'] == "Native"]
 
-
 states = set(NPS_Species['State'])
 
 
@@ -99,7 +108,7 @@ states = set(NPS_Species['State'])
 ## Streamlight Inputs
 st.title("National Park Native Bees and Flowers")
 
-tab1, tab2 = st.tabs(["Bees :bee:", "Flowers :blossom:"])
+tab1, tab2, tab3 = st.tabs(["Bees :bee:", "Flowers :blossom:", "Do Bees :bee: predict flowers :blossom:?"])
 
 with tab1:
 
@@ -831,5 +840,454 @@ with tab2:
          st.subheader("Number of Native Flowers per Taxon Family")
          st.dataframe(nation_native_flower_family)
 
+with tab3:
 
+   nation_park_bee = pd.DataFrame(bee_family)
+   nation_park_bee.columns = ["Family"]
+   nation_park_bee.set_index("Family", inplace=True)
+   for i in parks:
+      temp_bee = NPS_bees.loc[NPS_bees['Park Code'] == i]
+      temp_bee_family = pd.DataFrame(temp_bee['Family'].value_counts().rename_axis('Family').reset_index(name='counts'))
+      nation_park_bee = pd.concat([nation_park_bee,temp_bee_family.set_index('Family')], axis=1).fillna(0)
 
+   nation_park_bee.columns = parks
+
+   nation_park_native_bee = pd.DataFrame(bee_family)
+   nation_park_native_bee.columns = ["Family"]
+   nation_park_native_bee.set_index("Family", inplace=True)
+   for i in parks:
+      temp_bee = Native_bees.loc[Native_bees['Park Code'] == i]
+      temp_bee_family = pd.DataFrame(temp_bee['Family'].value_counts().rename_axis('Family').reset_index(name='counts'))
+      nation_park_native_bee = pd.concat([nation_park_native_bee,temp_bee_family.set_index('Family')], axis=1).fillna(0)
+
+   nation_park_native_bee.columns = parks
+
+   ## (National) Number of Bee Families by State
+   nation_state_bee = pd.DataFrame(bee_family)
+   nation_state_bee.columns = ["Family"]
+   nation_state_bee.set_index("Family", inplace=True)
+   for i in states:
+      temp_bee = NPS_bees.loc[NPS_bees['State'] == i]
+      temp_bee_family = pd.DataFrame(temp_bee['Family'].value_counts().rename_axis('Family').reset_index(name='counts'))
+      nation_state_bee = pd.concat([nation_state_bee,temp_bee_family.set_index('Family')], axis=1).fillna(0)
+
+   nation_state_bee.columns = states
+
+   ## (National) Number of Native Bee Families by State
+   nation_state_native_bee = pd.DataFrame(bee_family)
+   nation_state_native_bee.columns = ["Family"]
+   nation_state_native_bee.set_index("Family", inplace=True)
+   for i in states:
+      temp_bee = Native_bees.loc[Native_bees['State'] == i]
+      temp_bee_family = pd.DataFrame(temp_bee['Family'].value_counts().rename_axis('Family').reset_index(name='counts'))
+      nation_state_native_bee = pd.concat([nation_state_native_bee,temp_bee_family.set_index('Family')], axis=1).fillna(0)
+
+   nation_state_native_bee.columns = states
+
+   ## (National) Number of Flower Families by Park
+   nation_park_flower = pd.DataFrame(flower_family)
+   nation_park_flower.columns = ["Family"]
+   nation_park_flower.set_index("Family", inplace=True)
+
+   for i in parks:
+         temp_flower = NPS_flowers.loc[NPS_flowers['Park Code'] == i]
+         temp_flower_family = pd.DataFrame(temp_flower['Family'].value_counts().rename_axis('Family').reset_index(name='counts'))
+         nation_park_flower = pd.concat([nation_park_flower,temp_flower_family.set_index('Family')], axis=1).fillna(0)
+
+   nation_park_flower.columns = parks
+
+   ## (National) Number of Native Flower Families by Park
+   nation_park_native_flower = pd.DataFrame(flower_family)
+   nation_park_native_flower.columns = ["Family"]
+   nation_park_native_flower.set_index("Family", inplace=True)
+
+   for i in parks:
+      temp_flower = Native_flowers.loc[Native_flowers['Park Code'] == i]
+      temp_flower_family = pd.DataFrame(temp_flower['Family'].value_counts().rename_axis('Family').reset_index(name='counts'))
+      nation_park_native_flower = pd.concat([nation_park_native_flower,temp_flower_family.set_index('Family')], axis=1).fillna(0)
+
+   nation_park_native_flower.columns = parks
+
+   ## (National) Number of Flower Families by State
+   nation_state_flower = pd.DataFrame(flower_family)
+   nation_state_flower.columns = ["Family"]
+   nation_state_flower.set_index("Family", inplace=True)
+   for i in states:
+      temp_flower = NPS_flowers.loc[NPS_flowers['State'] == i]
+      temp_flower_family = pd.DataFrame(temp_flower['Family'].value_counts().rename_axis('Family').reset_index(name='counts'))
+      nation_state_flower = pd.concat([nation_state_flower,temp_flower_family.set_index('Family')], axis=1).fillna(0)
+
+   nation_state_flower.columns = states
+
+   ## (National) Number of Native Flower Families by State
+   nation_state_native_flower = pd.DataFrame(flower_family)
+   nation_state_native_flower.columns = ["Family"]
+   nation_state_native_flower.set_index("Family", inplace=True)
+   for i in states:
+      temp_flower = Native_flowers.loc[Native_flowers['State'] == i]
+      temp_flower_family = pd.DataFrame(temp_flower['Family'].value_counts().rename_axis('Family').reset_index(name='counts'))
+      nation_state_native_flower = pd.concat([nation_state_native_flower,temp_flower_family.set_index('Family')], axis=1).fillna(0)
+
+   nation_state_native_flower.columns = states
+
+   park_bee_sum = nation_park_bee.sum()
+   park_native_bee_sum = nation_park_native_bee.sum()
+   state_bee_sum = nation_state_bee.sum()
+   state_native_bee_sum = nation_state_native_bee.sum()
+
+   park_flower_sum = nation_park_flower.sum()
+   park_native_flower_sum = nation_park_native_flower.sum()
+   state_flower_sum = nation_state_flower.sum()
+   state_native_flower_sum = nation_state_native_flower.sum()
+
+   park_sum = pd.concat([park_bee_sum, park_native_bee_sum, park_flower_sum, park_native_flower_sum], axis = 1)
+   state_sum = pd.concat([state_bee_sum, state_native_bee_sum, state_flower_sum, state_native_flower_sum], axis = 1)
+   park_sum.columns = ["Bee", "Native_Bee", "Flower", "Native_Flower"]
+   state_sum.columns = ["Bee", "Native_Bee", "Flower", "Native_Flower"]
+
+   col1, col2= st.columns(2)
+
+   with col1:
+         trainmodel_park = st.toggle("Parks - Train model")
+         
+         if trainmodel_park:
+            st.header("Modeling All Species by Park")
+            park_sum = park_sum[park_sum['Bee'] != 0]
+            y = park_sum.Flower.values
+            X = park_sum.Bee.values
+
+            y = y.reshape(len(y), 1)
+            X = X.reshape(len(X), 1)
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+            lrgr = LinearRegression()
+            lrgr.fit(X_train,y_train)
+            pred = lrgr.predict(X_test)
+
+            mse = mean_squared_error(y_test,pred)
+            rmse = sqrt(mse)
+
+            st.markdown(f"""
+            Linear Regression model trained :
+               - MSE:{mse}
+               - RMSE:{rmse}
+            """)
+            st.success('Model trained successfully')
+
+            fig=plt.figure()
+            plt.scatter(X, y,color='g')
+            plt.plot(X, lrgr.predict(X),color='k')
+            plt.show()
+            st.plotly_chart(fig)
+      
+         trainmodel_state = st.toggle("State - Train model")
+
+         if trainmodel_state:
+            st.header("Modeling All Species by State")
+            state_sum = state_sum[state_sum['Bee'] != 0]
+            y = state_sum.Flower.values
+            X = state_sum.Bee.values
+
+            y = y.reshape(len(y), 1)
+            X = X.reshape(len(X), 1)
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+            lrgr = LinearRegression()
+            lrgr.fit(X_train,y_train)
+            pred = lrgr.predict(X_test)
+
+            mse = mean_squared_error(y_test,pred)
+            rmse = sqrt(mse)
+
+            st.markdown(f"""
+            Linear Regression model trained :
+               - MSE:{mse}
+               - RMSE:{rmse}
+            """)
+            st.success('Model trained successfully')
+
+            fig=plt.figure()
+            plt.scatter(X, y,color='g')
+            plt.plot(X, lrgr.predict(X),color='k')
+            plt.show()
+            st.plotly_chart(fig)
+   
+         dokfold_park = st.toggle("Park - DO KFold")
+
+         if dokfold_park:
+            st.subheader("KFOLD Random sampling Evalution")
+            st.empty()
+            my_bar = st.progress(0)
+
+            from sklearn.model_selection import KFold
+
+            park_sum = park_sum[park_sum['Bee'] != 0]
+            y = park_sum.Flower.values
+            X = park_sum.Bee.values
+
+            y = y.reshape(len(y), 1)
+            X = X.reshape(len(X), 1)
+            #st.progress()
+            kf=KFold(n_splits=10)
+            #X=X.reshape(-1,1)
+            mse_list=[]
+            rmse_list=[]
+            r2_list=[]
+            idx=1
+            fig=plt.figure()
+            i=0
+            for train_index, test_index in kf.split(X):
+            #	st.progress()
+               my_bar.progress(idx*10)
+               X_train, X_test = X[train_index], X[test_index]
+               y_train, y_test = y[train_index], y[test_index]
+               lrgr = LinearRegression()
+               lrgr.fit(X_train,y_train)
+               pred = lrgr.predict(X_test)
+               
+               mse = mean_squared_error(y_test,pred)
+               rmse = sqrt(mse)
+               r2=r2_score(y_test,pred)
+               mse_list.append(mse)
+               rmse_list.append(rmse)
+               r2_list.append(r2)
+               plt.plot(pred,label=f"dataset-{idx}")
+               idx+=1
+            plt.legend()
+            plt.xlabel("Data points")
+            plt.ylabel("PRedictions")
+            plt.show()
+            st.plotly_chart(fig)
+
+            res=pd.DataFrame(columns=["MSE","RMSE","r2_SCORE"])
+            res["MSE"]=mse_list
+            res["RMSE"]=rmse_list
+            res["r2_SCORE"]=r2_list
+
+            st.write(res)
+
+         dokfold_state = st.toggle("State - DO KFold")
+
+         if dokfold_state:
+            st.subheader("KFOLD Random sampling Evalution")
+            st.empty()
+            my_bar = st.progress(0)
+
+            from sklearn.model_selection import KFold
+
+            state_sum = state_sum[state_sum['Bee'] != 0]
+            y = state_sum.Flower.values
+            X = state_sum.Bee.values
+
+            y = y.reshape(len(y), 1)
+            X = X.reshape(len(X), 1)
+            #st.progress()
+            kf=KFold(n_splits=10)
+            #X=X.reshape(-1,1)
+            mse_list=[]
+            rmse_list=[]
+            r2_list=[]
+            idx=1
+            fig=plt.figure()
+            i=0
+            for train_index, test_index in kf.split(X):
+            #	st.progress()
+               my_bar.progress(idx*10)
+               X_train, X_test = X[train_index], X[test_index]
+               y_train, y_test = y[train_index], y[test_index]
+               lrgr = LinearRegression()
+               lrgr.fit(X_train,y_train)
+               pred = lrgr.predict(X_test)
+               
+               mse = mean_squared_error(y_test,pred)
+               rmse = sqrt(mse)
+               r2=r2_score(y_test,pred)
+               mse_list.append(mse)
+               rmse_list.append(rmse)
+               r2_list.append(r2)
+               plt.plot(pred,label=f"dataset-{idx}")
+               idx+=1
+            plt.legend()
+            plt.xlabel("Data points")
+            plt.ylabel("PRedictions")
+            plt.show()
+            st.plotly_chart(fig)
+
+            res=pd.DataFrame(columns=["MSE","RMSE","r2_SCORE"])
+            res["MSE"]=mse_list
+            res["RMSE"]=rmse_list
+            res["r2_SCORE"]=r2_list
+
+            st.write(res)
+
+   with col2:
+      trainmodel_park_native = st.toggle("Parks (Native Species) - Train model")
+      
+      if trainmodel_park_native:
+         st.header("Modeling Native Species by Park")
+         park_sum = park_sum[park_sum['Native_Bee'] != 0]
+         y = park_sum.Native_Flower.values
+         X = park_sum.Native_Bee.values
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+         lrgr = LinearRegression()
+         lrgr.fit(X_train,y_train)
+         pred = lrgr.predict(X_test)
+
+         mse = mean_squared_error(y_test,pred)
+         rmse = sqrt(mse)
+
+         st.markdown(f"""
+         Linear Regression model trained :
+            - MSE:{mse}
+            - RMSE:{rmse}
+         """)
+         st.success('Model trained successfully')
+
+         fig=plt.figure()
+         plt.scatter(X, y,color='g')
+         plt.plot(X, lrgr.predict(X),color='k')
+         plt.show()
+         st.plotly_chart(fig)
+         
+      trainmodel_state_native = st.toggle("State (Native Species) - Train model")
+
+      if trainmodel_state_native:
+         st.header("Modeling Native Species by State")
+         state_sum = state_sum[state_sum['Native_Bee'] != 0]
+         y = state_sum.Native_Flower.values
+         X = state_sum.Native_Bee.values
+
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+         lrgr = LinearRegression()
+         lrgr.fit(X_train,y_train)
+         pred = lrgr.predict(X_test)
+
+         mse = mean_squared_error(y_test,pred)
+         rmse = sqrt(mse)
+
+         st.markdown(f"""
+         Linear Regression model trained :
+            - MSE:{mse}
+            - RMSE:{rmse}
+         """)
+         st.success('Model trained successfully')
+
+         fig=plt.figure()
+         plt.scatter(X, y,color='g')
+         plt.plot(X, lrgr.predict(X),color='k')
+         plt.show()
+         st.plotly_chart(fig)
+
+      dokfold_park_native = st.toggle("Park (Native Species) - DO KFold")
+      
+      if dokfold_park_native:
+         st.subheader("KFOLD Random sampling Evalution")
+         st.empty()
+         my_bar = st.progress(0)
+
+         from sklearn.model_selection import KFold
+
+         park_sum = park_sum[park_sum['Native_Bee'] != 0]
+         y = park_sum.Native_Flower.values
+         X = park_sum.Native_Bee.values
+
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         #st.progress()
+         kf=KFold(n_splits=10)
+         #X=X.reshape(-1,1)
+         mse_list=[]
+         rmse_list=[]
+         r2_list=[]
+         idx=1
+         fig=plt.figure()
+         i=0
+         for train_index, test_index in kf.split(X):
+         #	st.progress()
+            my_bar.progress(idx*10)
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            lrgr = LinearRegression()
+            lrgr.fit(X_train,y_train)
+            pred = lrgr.predict(X_test)
+            
+            mse = mean_squared_error(y_test,pred)
+            rmse = sqrt(mse)
+            r2=r2_score(y_test,pred)
+            mse_list.append(mse)
+            rmse_list.append(rmse)
+            r2_list.append(r2)
+            plt.plot(pred,label=f"dataset-{idx}")
+            idx+=1
+         plt.legend()
+         plt.xlabel("Data points")
+         plt.ylabel("PRedictions")
+         plt.show()
+         st.plotly_chart(fig)
+
+         res=pd.DataFrame(columns=["MSE","RMSE","r2_SCORE"])
+         res["MSE"]=mse_list
+         res["RMSE"]=rmse_list
+         res["r2_SCORE"]=r2_list
+
+         st.write(res)
+
+      dokfold_state_native = st.toggle("State (Native Species) - DO KFold")
+
+      if dokfold_state_native:
+         st.subheader("KFOLD Random sampling Evalution")
+         st.empty()
+         my_bar = st.progress(0)
+
+         from sklearn.model_selection import KFold
+
+         state_sum = state_sum[state_sum['Native_Bee'] != 0]
+         y = state_sum.Native_Flower.values
+         X = state_sum.Native_Bee.values
+
+         y = y.reshape(len(y), 1)
+         X = X.reshape(len(X), 1)
+         #st.progress()
+         kf=KFold(n_splits=10)
+         #X=X.reshape(-1,1)
+         mse_list=[]
+         rmse_list=[]
+         r2_list=[]
+         idx=1
+         fig=plt.figure()
+         i=0
+         for train_index, test_index in kf.split(X):
+         #	st.progress()
+            my_bar.progress(idx*10)
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            lrgr = LinearRegression()
+            lrgr.fit(X_train,y_train)
+            pred = lrgr.predict(X_test)
+            
+            mse = mean_squared_error(y_test,pred)
+            rmse = sqrt(mse)
+            r2=r2_score(y_test,pred)
+            mse_list.append(mse)
+            rmse_list.append(rmse)
+            r2_list.append(r2)
+            plt.plot(pred,label=f"dataset-{idx}")
+            idx+=1
+         plt.legend()
+         plt.xlabel("Data points")
+         plt.ylabel("PRedictions")
+         plt.show()
+         st.plotly_chart(fig)
+
+         res=pd.DataFrame(columns=["MSE","RMSE","r2_SCORE"])
+         res["MSE"]=mse_list
+         res["RMSE"]=rmse_list
+         res["r2_SCORE"]=r2_list
+
+         st.write(res)
